@@ -6,7 +6,8 @@
   "functions": {
     "predeploy": [
       "yarn --modules-folder \"$RESOURCE_DIR\" lint"
-    ]
+    ],
+    "source": "."
   },
   "hosting": {
     "public": "build",
