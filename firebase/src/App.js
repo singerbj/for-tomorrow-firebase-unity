@@ -1,25 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Woooo we made it
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+import CssBaseline from '@mui/material/CssBaseline';
+import Grid from './grid/Grid';
+
+const theme = createTheme({});
+
+const App = () => {
+    return (
+        <>
+            <CssBaseline />
+            <ThemeProvider theme={theme}>
+                <Grid />
+            </ThemeProvider>
+        </>
+    );
+};
 
 export default App;
