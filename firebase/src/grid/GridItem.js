@@ -47,8 +47,8 @@ const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMo
             left += mousePosition[0] - mouseDownPositon[0];
             top += mousePosition[1] - mouseDownPositon[1];
         } else {
-            left = mousePosition[0] - (size[0] * GRID_SQUARE_WIDTH) / 2;
-            top = mousePosition[1] - (size[1] * GRID_SQUARE_WIDTH) / 2;
+            left = mousePosition[0] + window.scrollX - (size[0] * GRID_SQUARE_WIDTH) / 2;
+            top = mousePosition[1] + window.scrollY - (size[1] * GRID_SQUARE_WIDTH) / 2;
         }
     }
 
