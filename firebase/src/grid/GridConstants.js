@@ -3,8 +3,9 @@ export const COLUMNS = 20;
 export const GRID_SQUARE_WIDTH = 50;
 export const SPACE_BETWEEN_SQUARES = 2;
 export const CSS_BUG = 0.1;
+export const R_KEY = 114;
 
-export const TEST_STATE = [
+export const TEST_STATE_ARRAY = [
     {
         uuid: 'q0',
         location: [0, 0],
@@ -92,7 +93,7 @@ export const TEST_STATE = [
     {
         uuid: 'r9',
         location: [13, 0],
-        size: [1, 1],
+        size: [3, 1],
         rotated: false,
     },
     {
@@ -122,7 +123,14 @@ export const TEST_STATE = [
     {
         uuid: 's2',
         location: [12, 3],
-        size: [5, 3],
+        size: [9, 3],
         rotated: true,
     },
 ];
+
+const tmp = {};
+TEST_STATE_ARRAY.forEach((o) => {
+    tmp[o.uuid] = o;
+});
+
+export const TEST_STATE = tmp;
