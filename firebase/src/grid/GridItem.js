@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { makeStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES } from './GridConstants';
+import { getGridPosition } from './GridUtils';
 
 const useStyles = makeStyles((theme) => {
     return {
@@ -22,13 +23,20 @@ const useStyles = makeStyles((theme) => {
     };
 });
 
-const GridItem = ({ location, size, gridOffset, mousePosition, placeGridItem, setMovingGridItemData, windowMouseDown }) => {
+const GridItem = ({ gridItem, setGridItem, gridOffset, mousePosition, placeGridItem, setMovingGridItemLocation, setMovingGridItemSize, windowMouseDown }) => {
     const classes = useStyles();
     const [mouseDownPositon, setMouseDownPositon] = useState(undefined);
+    const mouseDownPositionRef = useRef(mouseDownPositon);
+    mouseDownPositionRef.current = mouseDownPositon;
     const dragging = windowMouseDown && mouseDownPositon !== undefined;
 
-    let left = location[0] * GRID_SQUARE_WIDTH + location[0] * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
-    let top = location[1] * GRID_SQUARE_WIDTH + location[1] * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[1] : 0);
+    const gridItemRef = useRef(gridItem);
+    gridItemRef.current = gridItem;
+
+    const size = gridItem.rotated ? [...gridItem.size].reverse() : gridItem.size;
+
+    let left = gridItem.location[0] * GRID_SQUARE_WIDTH + gridItem.location[0] * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
+    let top = gridItem.location[1] * GRID_SQUARE_WIDTH + gridItem.location[1] * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[1] : 0);
     const width = size[0] * GRID_SQUARE_WIDTH + (size[0] - 1) * SPACE_BETWEEN_SQUARES;
     const height = size[1] * GRID_SQUARE_WIDTH + (size[1] - 1) * SPACE_BETWEEN_SQUARES;
 
@@ -39,20 +47,45 @@ const GridItem = ({ location, size, gridOffset, mousePosition, placeGridItem, se
 
     useEffect(() => {
         if (windowMouseDown === false) {
-            setMovingGridItemData(undefined);
+            setMovingGridItemLocation(undefined);
+            setMovingGridItemSize(undefined);
             setMouseDownPositon(undefined);
         }
     }, [windowMouseDown]);
 
+    useEffect(() => {
+        if (gridItem.uuid === '99') {
+            console.log(123, gridItem);
+        }
+    }, [gridItem.rotated]);
+
+    useEffect(() => {
+        const cb = (e) => {
+            // use e.keyCode
+            if (e.keyCode === 114) {
+                if (mouseDownPositionRef.current !== undefined) {
+                    setGridItem({ ...gridItemRef.current, rotated: !gridItemRef.current.rotated });
+                    setMovingGridItemSize(!gridItemRef.current.rotated ? [...gridItemRef.current.size].reverse() : gridItemRef.current.size);
+                }
+            }
+        };
+        window.addEventListener('keypress', cb);
+        return () => {
+            window.removeEventListener('keypress', cb);
+        };
+    }, []);
+
     const onMouseDown = () => {
         setMouseDownPositon(mousePosition);
-        setMovingGridItemData([[mousePosition[0] - left, mousePosition[1] - top], size]);
+        setMovingGridItemLocation([mousePosition[0] - left, mousePosition[1] - top]);
+        setMovingGridItemSize(size);
     };
 
     const onMouseUp = () => {
-        setMovingGridItemData(undefined);
+        setMovingGridItemLocation(undefined);
+        setMovingGridItemSize(undefined);
         setMouseDownPositon(undefined);
-        placeGridItem([left - gridOffset[0], top - gridOffset[1]], size);
+        placeGridItem(getGridPosition(left - gridOffset[0], top - gridOffset[1]), gridItem.location, gridItem.rotated);
     };
 
     if (gridOffset === null) {
@@ -60,18 +93,19 @@ const GridItem = ({ location, size, gridOffset, mousePosition, placeGridItem, se
     }
     return (
         <div className={dragging ? classes.itemDragging : classes.item} style={{ top, left, width, height }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
-            Item
+            {`${gridItem.uuid} - ${gridItem.rotated}`}
         </div>
     );
 };
 
 GridItem.propTypes = {
-    location: PropTypes.array.isRequired,
-    size: PropTypes.array.isRequired,
+    gridItem: PropTypes.object.isRequired,
+    setGridItem: PropTypes.any.isRequired,
     gridOffset: PropTypes.array,
     mousePosition: PropTypes.array.isRequired,
     placeGridItem: PropTypes.any.isRequired,
-    setMovingGridItemData: PropTypes.any.isRequired,
+    setMovingGridItemLocation: PropTypes.any.isRequired,
+    setMovingGridItemSize: PropTypes.any.isRequired,
     windowMouseDown: PropTypes.bool.isRequired,
 };
 

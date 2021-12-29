@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
 import { useMouse } from '../hooks/useMouse';
-import { ROWS, COLUMNS, GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, CSS_BUG } from './GridConstants';
+import { ROWS, COLUMNS, GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, CSS_BUG, TEST_STATE } from './GridConstants';
 import GridItem from './GridItem';
+import { getGridPosition } from './GridUtils';
+import { moveGridItem } from '../shared/grid/GridManagement';
 
 const useStyles = makeStyles({
     grid: {
@@ -31,49 +33,57 @@ const useStyles = makeStyles({
     },
 });
 
-const getGridPosition = (left, top) => {
-    const column = Math.round(left / (GRID_SQUARE_WIDTH + SPACE_BETWEEN_SQUARES));
-    const row = Math.round(top / (GRID_SQUARE_WIDTH + SPACE_BETWEEN_SQUARES));
-    return [column, row];
-};
-
 const Grid = () => {
     const classes = useStyles();
-    const [gridState] = useState([...new Array(COLUMNS)].map(() => []));
-    const [movingGridItemData, setMovingGridItemData] = useState(undefined);
+    const [gridState, setGridState] = useState(JSON.parse(localStorage.getItem('gridState')) || TEST_STATE);
+    const [movingGridItemLocation, setMovingGridItemLocation] = useState(undefined);
+    const [movingGridItemSize, setMovingGridItemSize] = useState(undefined);
     const [windowMouseDown, setWindowMouseDown] = useState(false);
     const boundingRectRef = useRef();
-    const gridOffset = boundingRectRef.current ? [boundingRectRef.current.getBoundingClientRect().x, boundingRectRef.current.getBoundingClientRect().y] : null;
+    const [gridOffset, setGridOffset] = useState(null);
+
+    useEffect(() => {
+        setGridOffset([boundingRectRef.current.getBoundingClientRect().x + window.scrollX, boundingRectRef.current.getBoundingClientRect().y + window.scrollY]);
+    }, [boundingRectRef]);
 
     const onMouseUp = () => {
         setWindowMouseDown(false);
-        setMovingGridItemData(undefined);
+        setMovingGridItemLocation(undefined);
+        setMovingGridItemSize(undefined);
     };
     const onMouseDown = () => setWindowMouseDown(true);
 
     const [position] = useMouse(onMouseDown, onMouseUp);
 
-    const placeGridItem = (gridItemPosition, size) => {
-        const [column, row] = getGridPosition(gridItemPosition[0], gridItemPosition[1]);
-        console.log(gridState, column, row, size);
+    const placeGridItem = (newGridItemLocation, oldGridItemLocation, rotated) => {
+        const newState = moveGridItem(gridState, newGridItemLocation, oldGridItemLocation, rotated);
+        console.log(
+            gridState.find((o) => o.uuid === '99'),
+            newState.find((o) => o.uuid === '99')
+        );
+        setGridState(newState);
     };
+
+    useEffect(() => {
+        localStorage.setItem('gridState', JSON.stringify(gridState));
+    }, [gridState]);
 
     let columnToHighlight;
     let rowToHighlight;
-    if (movingGridItemData) {
-        [columnToHighlight, rowToHighlight] = getGridPosition(position.x - movingGridItemData[0][0] - gridOffset[0], position.y - movingGridItemData[0][1] - gridOffset[1]);
+    if (movingGridItemLocation) {
+        [columnToHighlight, rowToHighlight] = getGridPosition(position.x - movingGridItemLocation[0] - gridOffset[0], position.y - movingGridItemLocation[1] - gridOffset[1]);
     }
 
     return (
         <>
             <div className={classes.grid} style={{ zIndex: 1 }} ref={boundingRectRef}>
                 {[...new Array(ROWS)].map((i, j) => {
-                    const highlightRow = rowToHighlight !== undefined && j >= rowToHighlight && j < rowToHighlight + movingGridItemData[1][1];
+                    const highlightRow = rowToHighlight !== undefined && j >= rowToHighlight && j < rowToHighlight + movingGridItemSize[1];
                     return (
                         // eslint-disable-next-line react/no-array-index-key
                         <div key={`${i} ${j}`} className={classes.gridRow}>
                             {[...new Array(COLUMNS)].map((k, l) => {
-                                const highlightColumn = columnToHighlight !== undefined && l >= columnToHighlight && l < columnToHighlight + movingGridItemData[1][0];
+                                const highlightColumn = columnToHighlight !== undefined && l >= columnToHighlight && l < columnToHighlight + movingGridItemSize[0];
 
                                 let backgroundColor = ((j % 2) + l) % 2 === 0 ? '#fff' : '#ccc';
                                 if (highlightRow && highlightColumn) {
@@ -87,13 +97,30 @@ const Grid = () => {
                 })}
             </div>
 
-            <GridItem location={[2, 2]} size={[1, 1]} gridOffset={gridOffset} mousePosition={[position.x, position.y]} placeGridItem={placeGridItem} setMovingGridItemData={setMovingGridItemData} windowMouseDown={windowMouseDown} />
-            <GridItem location={[3, 3]} size={[1, 3]} gridOffset={gridOffset} mousePosition={[position.x, position.y]} placeGridItem={placeGridItem} setMovingGridItemData={setMovingGridItemData} windowMouseDown={windowMouseDown} />
-            <GridItem location={[4, 4]} size={[2, 2]} gridOffset={gridOffset} mousePosition={[position.x, position.y]} placeGridItem={placeGridItem} setMovingGridItemData={setMovingGridItemData} windowMouseDown={windowMouseDown} />
-            <GridItem location={[10, 10]} size={[4, 7]} gridOffset={gridOffset} mousePosition={[position.x, position.y]} placeGridItem={placeGridItem} setMovingGridItemData={setMovingGridItemData} windowMouseDown={windowMouseDown} />
-            <GridItem location={[14, 3]} size={[5, 2]} gridOffset={gridOffset} mousePosition={[position.x, position.y]} placeGridItem={placeGridItem} setMovingGridItemData={setMovingGridItemData} windowMouseDown={windowMouseDown} />
-
-            {gridState}
+            {gridState.map((gridItem) => {
+                return (
+                    <GridItem
+                        boundingRectRef={boundingRectRef}
+                        key={gridItem.uuid}
+                        gridItem={gridItem}
+                        setGridItem={(gridItemData) => {
+                            const newState = [...gridState].map((gi) => {
+                                if (gi.uuid === gridItem.uuid) {
+                                    return gridItemData;
+                                }
+                                return gi;
+                            });
+                            setGridState(newState);
+                        }}
+                        gridOffset={gridOffset}
+                        mousePosition={[position.x, position.y]}
+                        placeGridItem={placeGridItem}
+                        setMovingGridItemLocation={setMovingGridItemLocation}
+                        setMovingGridItemSize={setMovingGridItemSize}
+                        windowMouseDown={windowMouseDown}
+                    />
+                );
+            })}
         </>
     );
 };

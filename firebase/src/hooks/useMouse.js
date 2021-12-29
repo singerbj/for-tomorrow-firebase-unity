@@ -5,11 +5,13 @@ export const useMouse = (onMouseDownCallback, onMouseUpCallback) => {
     const [mouseDown, setMouseDown] = useState(false);
 
     useEffect(() => {
-        const setFromEvent = (e) => setPosition({ x: e.clientX, y: e.clientY });
-        window.addEventListener('mousemove', setFromEvent);
+        const cb = (e) => {
+            setPosition({ x: e.clientX, y: e.clientY });
+        };
+        window.addEventListener('mousemove', cb);
 
         return () => {
-            window.removeEventListener('mousemove', setFromEvent);
+            window.removeEventListener('mousemove', cb);
         };
     }, []);
 
