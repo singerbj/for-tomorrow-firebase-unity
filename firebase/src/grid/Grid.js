@@ -104,6 +104,7 @@ const Grid = () => {
                     <GridItem
                         boundingRectRef={boundingRectRef}
                         key={gridItem.uuid}
+                        gridState={gridState}
                         gridItem={gridItem}
                         gridOffset={gridOffset}
                         mousePosition={[position.x, position.y]}

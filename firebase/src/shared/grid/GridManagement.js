@@ -91,3 +91,23 @@ export const moveGridItem = (gridState, newGridItemLocation, oldGridItemLocation
     }
     return [error, gridState];
 };
+
+export const validatePosition = (gridState, gridItem) => {
+    let isValid = true;
+    const grid = _constructGrid(gridState);
+    for (let i = gridItem.location[0]; i < gridItem.location[0] + gridItem.size[gridItem.rotated ? 1 : 0]; i += 1) {
+        for (let j = gridItem.location[1]; j < gridItem.location[1] + gridItem.size[gridItem.rotated ? 0 : 1]; j += 1) {
+            if (isValid) {
+                if (j < 0 || j > ROWS - 1 || i < 0 || i > COLUMNS - 1) {
+                    isValid = false;
+                    break;
+                }
+                if (grid[j][i] !== null && grid[j][i] !== gridItem.uuid) {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
+    }
+    return isValid;
+};

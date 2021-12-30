@@ -3,6 +3,7 @@ import { makeStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, R_KEY } from './GridConstants';
 import { getGridPosition } from './GridUtils';
+import { validatePosition } from '../shared/grid/GridManagement';
 
 const useStyles = makeStyles((theme) => {
     return {
@@ -14,14 +15,21 @@ const useStyles = makeStyles((theme) => {
             userSelect: 'none',
         },
         itemDragging: {
-            backgroundColor: 'rgb(85, 85, 187, 0.5)',
+            backgroundColor: 'rgb(85, 85, 187, 0.25)',
             zIndex: 5,
             position: 'absolute',
             padding: theme.spacing(0.5),
             userSelect: 'none',
         },
-        highlight: {
-            backgroundColor: 'rgb(85, 187, 85, 0.5)',
+        highlightValid: {
+            backgroundColor: 'rgb(85, 187, 85, 0.75)',
+            zIndex: 4,
+            position: 'absolute',
+            padding: theme.spacing(0.5),
+            userSelect: 'none',
+        },
+        highlightInvalid: {
+            backgroundColor: 'rgb(187, 85, 85, 0.75)',
             zIndex: 4,
             position: 'absolute',
             padding: theme.spacing(0.5),
@@ -30,7 +38,7 @@ const useStyles = makeStyles((theme) => {
     };
 });
 
-const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMouseDown, resetCounter }) => {
+const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridItem, windowMouseDown, resetCounter }) => {
     const classes = useStyles();
     const [mouseDownPositon, setMouseDownPositon] = useState(undefined);
     const mouseDownPositionRef = useRef(mouseDownPositon);
@@ -51,6 +59,7 @@ const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMo
 
     let highlightLeft;
     let highlightTop;
+    let highlightValid;
     if (dragging) {
         if (gridItem.rotated === localRotationRef.current || gridItem.size[0] === gridItem.size[1]) {
             left += mousePosition[0] - mouseDownPositon[0];
@@ -63,6 +72,8 @@ const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMo
         const [x, y] = getGridPosition(left - gridOffset[0], top - gridOffset[1]);
         highlightTop = y * GRID_SQUARE_WIDTH + y * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
         highlightLeft = x * GRID_SQUARE_WIDTH + x * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
+
+        highlightValid = validatePosition(gridState, { ...gridItem, location: [x, y] });
     }
 
     useEffect(() => {
@@ -101,9 +112,10 @@ const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMo
     if (gridOffset === null) {
         return null;
     }
+
     return (
         <>
-            {dragging && <div className={classes.highlight} style={{ top: highlightTop, left: highlightLeft, width, height }} />}
+            {dragging && <div className={highlightValid ? classes.highlightValid : classes.highlightInvalid} style={{ top: highlightTop, left: highlightLeft, width, height }} />}
             <div className={dragging ? classes.itemDragging : classes.item} style={{ top, left, width, height }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
                 {`${gridItem.uuid} - ${localRotation}`}
             </div>
@@ -112,6 +124,7 @@ const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMo
 };
 
 GridItem.propTypes = {
+    gridState: PropTypes.object.isRequired,
     gridItem: PropTypes.object.isRequired,
     gridOffset: PropTypes.array,
     mousePosition: PropTypes.array.isRequired,
