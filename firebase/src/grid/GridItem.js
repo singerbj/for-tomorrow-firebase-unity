@@ -15,6 +15,13 @@ const useStyles = makeStyles((theme) => {
         },
         itemDragging: {
             backgroundColor: 'rgb(85, 85, 187, 0.5)',
+            zIndex: 5,
+            position: 'absolute',
+            padding: theme.spacing(0.5),
+            userSelect: 'none',
+        },
+        highlight: {
+            backgroundColor: 'rgb(85, 187, 85, 0.5)',
             zIndex: 4,
             position: 'absolute',
             padding: theme.spacing(0.5),
@@ -42,6 +49,8 @@ const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMo
     const width = size[0] * GRID_SQUARE_WIDTH + (size[0] - 1) * SPACE_BETWEEN_SQUARES;
     const height = size[1] * GRID_SQUARE_WIDTH + (size[1] - 1) * SPACE_BETWEEN_SQUARES;
 
+    let highlightLeft;
+    let highlightTop;
     if (dragging) {
         if (gridItem.rotated === localRotationRef.current || gridItem.size[0] === gridItem.size[1]) {
             left += mousePosition[0] - mouseDownPositon[0];
@@ -50,6 +59,10 @@ const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMo
             left = mousePosition[0] + window.scrollX - (size[0] * GRID_SQUARE_WIDTH) / 2;
             top = mousePosition[1] + window.scrollY - (size[1] * GRID_SQUARE_WIDTH) / 2;
         }
+
+        const [x, y] = getGridPosition(left - gridOffset[0], top - gridOffset[1]);
+        highlightTop = y * GRID_SQUARE_WIDTH + y * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
+        highlightLeft = x * GRID_SQUARE_WIDTH + x * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
     }
 
     useEffect(() => {
@@ -89,9 +102,12 @@ const GridItem = ({ gridItem, gridOffset, mousePosition, placeGridItem, windowMo
         return null;
     }
     return (
-        <div className={dragging ? classes.itemDragging : classes.item} style={{ top, left, width, height }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
-            {`${gridItem.uuid} - ${localRotation}`}
-        </div>
+        <>
+            {dragging && <div className={classes.highlight} style={{ top: highlightTop, left: highlightLeft, width, height }} />}
+            <div className={dragging ? classes.itemDragging : classes.item} style={{ top, left, width, height }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+                {`${gridItem.uuid} - ${localRotation}`}
+            </div>
+        </>
     );
 };
 

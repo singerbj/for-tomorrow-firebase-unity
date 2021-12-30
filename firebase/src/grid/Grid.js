@@ -3,7 +3,6 @@ import { makeStyles } from '@mui/styles';
 import { useMouse } from '../hooks/useMouse';
 import { ROWS, COLUMNS, GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, CSS_BUG, TEST_STATE } from './GridConstants';
 import GridItem from './GridItem';
-import { getGridPosition } from './GridUtils';
 import { moveGridItem } from '../shared/grid/GridManagement';
 
 const useStyles = makeStyles({
@@ -38,7 +37,7 @@ const Grid = () => {
     const [gridState, setGridState] = useState(JSON.parse(localStorage.getItem('gridState')) || TEST_STATE);
     const gridStateRef = useRef(gridState);
     gridStateRef.current = gridState;
-    const [movingGridItemLocation, setMovingGridItemLocation] = useState(undefined);
+    // const [movingGridItemLocation, setMovingGridItemLocation] = useState(undefined);
     const [movingGridItemSize, setMovingGridItemSize] = useState(undefined);
     const [windowMouseDown, setWindowMouseDown] = useState(false);
     const boundingRectRef = useRef();
@@ -51,7 +50,7 @@ const Grid = () => {
 
     const onMouseUp = () => {
         setWindowMouseDown(false);
-        setMovingGridItemLocation(undefined);
+        // setMovingGridItemLocation(undefined);
         setMovingGridItemSize(undefined);
     };
     const onMouseDown = () => setWindowMouseDown(true);
@@ -72,9 +71,9 @@ const Grid = () => {
 
     let columnToHighlight;
     let rowToHighlight;
-    if (movingGridItemLocation) {
-        [columnToHighlight, rowToHighlight] = getGridPosition(position.x - movingGridItemLocation[0] - gridOffset[0], position.y - movingGridItemLocation[1] - gridOffset[1]);
-    }
+    // if (movingGridItemLocation) {
+    //     [columnToHighlight, rowToHighlight] = getGridPosition(position.x - movingGridItemLocation[0] - gridOffset[0], position.y - movingGridItemLocation[1] - gridOffset[1]);
+    // }
 
     return (
         <>
@@ -109,7 +108,6 @@ const Grid = () => {
                         gridOffset={gridOffset}
                         mousePosition={[position.x, position.y]}
                         placeGridItem={placeGridItem}
-                        setMovingGridItemLocation={setMovingGridItemLocation}
                         setMovingGridItemSize={setMovingGridItemSize}
                         windowMouseDown={windowMouseDown}
                         resetCounter={resetCounter}
