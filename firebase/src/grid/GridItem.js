@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { makeStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
-import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, R_KEY, BACKSPACE_DELETE_KEY } from './GridConstants';
+import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, R_KEY, BACKSPACE_DELETE_KEY, LEFT_MOUSE_BUTTON } from './GridConstants';
 import { getGridPosition, hexToRgb } from './GridUtils';
 import { validatePosition } from '../shared/grid/GridManagement';
 
@@ -102,8 +102,10 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
         };
     }, []);
 
-    const onMouseDown = () => {
-        setMouseDownPositon(mousePosition);
+    const onMouseDown = (e) => {
+        if (e.button === LEFT_MOUSE_BUTTON) {
+            setMouseDownPositon(mousePosition);
+        }
     };
 
     const onMouseUp = () => {

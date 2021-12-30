@@ -5,6 +5,7 @@ export const SPACE_BETWEEN_SQUARES = 2;
 export const CSS_BUG = 0.1;
 export const R_KEY = ['r', 'R'];
 export const BACKSPACE_DELETE_KEY = ['Backspace', 'Delete'];
+export const LEFT_MOUSE_BUTTON = 0;
 
 export const TEST_STATE_ARRAY = [
     {
