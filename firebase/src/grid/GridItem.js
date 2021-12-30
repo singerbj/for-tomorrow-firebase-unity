@@ -70,8 +70,8 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
         }
 
         const [x, y] = getGridPosition(left - gridOffset[0], top - gridOffset[1]);
-        highlightTop = y * GRID_SQUARE_WIDTH + y * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
         highlightLeft = x * GRID_SQUARE_WIDTH + x * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
+        highlightTop = y * GRID_SQUARE_WIDTH + y * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[1] : 0);
 
         highlightValid = validatePosition(gridState, { ...gridItem, location: [x, y], rotated: localRotation });
     }
