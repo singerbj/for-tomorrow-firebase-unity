@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { makeStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
-import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, R_KEY } from './GridConstants';
-import { getGridPosition } from './GridUtils';
+import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, R_KEY, BACKSPACE_DELETE_KEY } from './GridConstants';
+import { getGridPosition, hexToRgb } from './GridUtils';
 import { validatePosition } from '../shared/grid/GridManagement';
 
 const useStyles = makeStyles((theme) => {
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => {
     };
 });
 
-const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridItem, windowMouseDown, resetCounter }) => {
+const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridItem, deleteGridItem, windowMouseDown, resetCounter }) => {
     const classes = useStyles();
     const [mouseDownPositon, setMouseDownPositon] = useState(undefined);
     const mouseDownPositionRef = useRef(mouseDownPositon);
@@ -73,7 +73,7 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
         highlightTop = y * GRID_SQUARE_WIDTH + y * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
         highlightLeft = x * GRID_SQUARE_WIDTH + x * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
 
-        highlightValid = validatePosition(gridState, { ...gridItem, location: [x, y] });
+        highlightValid = validatePosition(gridState, { ...gridItem, location: [x, y], rotated: localRotation });
     }
 
     useEffect(() => {
@@ -88,15 +88,17 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
 
     useEffect(() => {
         const cb = (e) => {
-            if (e.keyCode === R_KEY) {
-                if (mouseDownPositionRef.current !== undefined) {
+            if (mouseDownPositionRef.current !== undefined) {
+                if (R_KEY.indexOf(e.key) > -1) {
                     setLocalRotation(!localRotationRef.current);
+                } else if (BACKSPACE_DELETE_KEY.indexOf(e.key) > -1) {
+                    deleteGridItem(gridItem.uuid);
                 }
             }
         };
-        window.addEventListener('keypress', cb);
+        window.addEventListener('keydown', cb);
         return () => {
-            window.removeEventListener('keypress', cb);
+            window.removeEventListener('keydown', cb);
         };
     }, []);
 
@@ -113,11 +115,12 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
         return null;
     }
 
+    const randomSeededRGBString = hexToRgb(Math.floor(Math.abs(Math.sin(parseInt(`12345${size[0]}${size[1]}`)) * 16777215)).toString(16));
     return (
         <>
             {dragging && <div className={highlightValid ? classes.highlightValid : classes.highlightInvalid} style={{ top: highlightTop, left: highlightLeft, width, height }} />}
-            <div className={dragging ? classes.itemDragging : classes.item} style={{ top, left, width, height }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
-                {`${gridItem.uuid} - ${localRotation}`}
+            <div className={dragging ? classes.itemDragging : classes.item} style={{ top, left, width, height, backgroundColor: `rgb(${randomSeededRGBString}, ${dragging ? 0.25 : 1})` }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+                {`Item ${gridItem.uuid}`}
             </div>
         </>
     );
@@ -129,6 +132,7 @@ GridItem.propTypes = {
     gridOffset: PropTypes.array,
     mousePosition: PropTypes.array.isRequired,
     placeGridItem: PropTypes.any.isRequired,
+    deleteGridItem: PropTypes.any.isRequired,
     windowMouseDown: PropTypes.bool.isRequired,
     resetCounter: PropTypes.number.isRequired,
 };

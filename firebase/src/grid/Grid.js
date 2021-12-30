@@ -58,11 +58,17 @@ const Grid = () => {
     const [position] = useMouse(onMouseDown, onMouseUp);
 
     const placeGridItem = (newGridItemLocation, oldGridItemLocation, rotated) => {
-        const [error, newState] = moveGridItem(gridState, newGridItemLocation, oldGridItemLocation, rotated);
+        const [error, newState] = moveGridItem(gridStateRef.current, newGridItemLocation, oldGridItemLocation, rotated);
         if (error) {
             setResetCounter((rc) => rc + 1);
         }
         setGridState(newState);
+    };
+
+    const deleteGridItem = (uuid) => {
+        const oldState = { ...gridStateRef.current };
+        delete oldState[uuid];
+        setGridState(oldState);
     };
 
     useEffect(() => {
@@ -109,6 +115,7 @@ const Grid = () => {
                         gridOffset={gridOffset}
                         mousePosition={[position.x, position.y]}
                         placeGridItem={placeGridItem}
+                        deleteGridItem={deleteGridItem}
                         setMovingGridItemSize={setMovingGridItemSize}
                         windowMouseDown={windowMouseDown}
                         resetCounter={resetCounter}

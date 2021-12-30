@@ -87,6 +87,7 @@ export const moveGridItem = (gridState, newGridItemLocation, oldGridItemLocation
         }
     }
     if (error) {
+        // eslint-disable-next-line no-console
         console.error(error);
     }
     return [error, gridState];
