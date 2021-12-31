@@ -63,7 +63,6 @@ const AppContextWrapper = ({ renderContent }) => {
                 loading: false,
             });
         } catch (e) {
-            console.log(e);
             setAppState({
                 ...appState,
                 loading: false,
@@ -75,12 +74,14 @@ const AppContextWrapper = ({ renderContent }) => {
     useEffect(() => {
         return onAuthStateChanged(async (user) => {
             if (user) {
+                // eslint-disable-next-line no-console
                 console.log('User is logged in');
                 setAppState({
                     ...appState,
                     loading: false,
                 });
             } else {
+                // eslint-disable-next-line no-console
                 console.log('No User logged in');
                 navigate('/login', { replace: true });
                 setAppState({
