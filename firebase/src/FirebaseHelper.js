@@ -1,9 +1,11 @@
 import { initializeApp, getApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, doc, onSnapshot, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, onSnapshot, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { DEVELOPMENT_MODE } from './Constants';
+
+const { INITIAL_INVENTORY } = require('./shared/GridConstants');
 
 const firebaseConfig = {
     apiKey: 'AIzaSyDb5UKC419V3i6oJEiOEKdl2Ix5Kl5JZIU',
@@ -53,7 +55,10 @@ export const loginOrSignupWithEmail = async (email, password) => {
         return await signInWithEmailAndPassword(auth, email, password);
     } catch (e) {
         if (e.message.indexOf('auth/user-not-found') > -1) {
-            return await createUserWithEmailAndPassword(auth, email, password);
+            const { user } = await createUserWithEmailAndPassword(auth, email, password);
+
+            const userDataRef = doc(db, 'userData', user.uid);
+            return await setDoc(userDataRef, { inventory: INITIAL_INVENTORY }, { merge: false });
         }
         throw e;
     }

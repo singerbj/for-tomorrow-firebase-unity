@@ -63,6 +63,7 @@ const AppContextWrapper = ({ renderContent }) => {
                 loading: false,
             });
         } catch (e) {
+            console.log(e);
             setAppState({
                 ...appState,
                 loading: false,

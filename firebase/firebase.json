@@ -5,7 +5,7 @@
   },
   "functions": {
     "predeploy": [
-      "yarn --modules-folder \"$RESOURCE_DIR\" lint"
+      "yarn --modules-folder \"$RESOURCE_DIR\" lint-functions"
     ],
     "source": "."
   },

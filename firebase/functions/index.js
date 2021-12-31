@@ -1,16 +1,15 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const { INITIAL_INVENTORY } = require('../src/shared/GridConstants');
 const { moveGridItem } = require('../src/shared/GridManagement');
 
 admin.initializeApp();
 
 const db = admin.firestore();
 
-exports.authOnCreate = functions.auth.user().onCreate((userRecord) => {
-    const { email, uid } = userRecord;
-    return db.collection('userData').doc(uid).set({ email, inventory: INITIAL_INVENTORY });
-});
+// exports.authOnCreate = functions.auth.user().onCreate((userRecord) => {
+//     const { email, uid } = userRecord;
+//     return db.collection('userData').doc(uid).set({ email, inventory: INITIAL_INVENTORY });
+// });
 
 // Grid actions
 // move item

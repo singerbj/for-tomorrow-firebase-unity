@@ -16,6 +16,7 @@ module.exports = {
             jsx: true,
         },
     },
+    ignorePatterns: ['**/node_modules/**', 'build/'],
     plugins: ['react', 'prettier'],
     rules: {
         'prettier/prettier': ['error'],
