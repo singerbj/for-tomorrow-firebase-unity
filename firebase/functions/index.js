@@ -21,7 +21,6 @@ exports.moveItem = functions.https.onCall(async (data) => {
         await db.runTransaction(async (t) => {
             const doc = await t.get(userDataRef);
 
-            // const newPopulation = doc.data().population + 1;
             const [error, newInventory] = moveGridItem(doc.data().inventory, data.newGridItemLocation, data.oldGridItemLocation, data.rotated);
             if (error) {
                 throw new Error(error);
@@ -29,20 +28,32 @@ exports.moveItem = functions.https.onCall(async (data) => {
             return t.update(userDataRef, { ...doc.data(), inventory: newInventory });
         });
 
-        console.log('Transaction success!');
+        console.log('moveItem success!');
     } catch (e) {
-        console.log('Transaction failed: ', e);
+        console.log('moveItem failed: ', e);
     }
-
-    // db.collection('userData').doc(uid).set({ inventory: INITIAL_INVENTORY });
-    // // moveGridItem(gridState, newGridItemLocation, oldGridItemLocation, rotated);
-    // // res.send({ data: 'Hello from Firebase!!!!' });
-    // // });
-    // return { world: 'hello' };
 });
+
 // delete item
-exports.deleteItem = functions.https.onCall((data, res) => {});
+exports.deleteItem = functions.https.onCall(async (data) => {
+    try {
+        const { uid } = await admin.auth().verifyIdToken(data.uidToken);
+        const userDataRef = db.collection('userData').doc(uid);
+        await db.runTransaction(async (t) => {
+            const doc = await t.get(userDataRef);
+
+            const newInventory = { ...doc.data().inventory };
+            delete newInventory[data.gridItemUuid];
+            return t.update(userDataRef, { ...doc.data(), inventory: newInventory });
+        });
+
+        console.log('deleteItem success!');
+    } catch (e) {
+        console.log('deleteItem failed: ', e);
+    }
+});
+
 // add item
-exports.addItem = functions.https.onCall((data, res) => {});
+// exports.addItem = functions.https.onCall((data, res) => {});
 // transfer item
-exports.transferItem = functions.https.onCall((data, res) => {});
+// exports.transferItem = functions.https.onCall((data, res) => {});

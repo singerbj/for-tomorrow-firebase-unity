@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme) => {
     };
 });
 
-const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridItem, deleteGridItem, windowMouseDown, resetCounter }) => {
+const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridItem, removeGridItem, windowMouseDown, resetCounter }) => {
     const classes = useStyles();
     const [mouseDownPositon, setMouseDownPositon] = useState(undefined);
     const mouseDownPositionRef = useRef(mouseDownPositon);
@@ -102,7 +102,7 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
                 if (R_KEY.indexOf(e.key) > -1) {
                     setLocalRotation(!localRotationRef.current);
                 } else if (BACKSPACE_DELETE_KEY.indexOf(e.key) > -1) {
-                    deleteGridItem(gridItem.uuid);
+                    removeGridItem(gridItem.uuid);
                 }
             }
         };
@@ -120,15 +120,18 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
 
     const onMouseUp = () => {
         setMouseDownPositon(undefined);
-        placeGridItem(getGridPosition(left - gridOffset[0], top - gridOffset[1]), gridItem.location, localRotationRef.current);
-        setLoading(true);
+        const newLocation = getGridPosition(left - gridOffset[0], top - gridOffset[1]);
+        placeGridItem(newLocation, gridItem.location, localRotationRef.current);
+        if (newLocation[0] !== gridItem.location[0] || newLocation[1] !== gridItem.location[1] || localRotationRef.current !== gridItem.rotated) {
+            setLoading(true);
+        }
     };
 
     if (gridOffset === null) {
         return null;
     }
 
-    const randomSeededRGBString = hexToRgb(Math.floor(Math.abs(Math.sin(parseInt(`12345${size[0]}${size[1]}`)) * 16777215)).toString(16));
+    const randomSeededRGBString = hexToRgb(Math.floor(Math.abs(Math.sin(parseInt(`12345${size[0]}${size[1]}`)) * 16777215)).toString(16)); // TODO: remove this
     return (
         <>
             {dragging && <div className={highlightValid ? classes.highlightValid : classes.highlightInvalid} style={{ top: highlightTop, left: highlightLeft, width, height }} />}
@@ -146,7 +149,7 @@ GridItem.propTypes = {
     gridOffset: PropTypes.array,
     mousePosition: PropTypes.array.isRequired,
     placeGridItem: PropTypes.any.isRequired,
-    deleteGridItem: PropTypes.any.isRequired,
+    removeGridItem: PropTypes.any.isRequired,
     windowMouseDown: PropTypes.bool.isRequired,
     resetCounter: PropTypes.number.isRequired,
 };

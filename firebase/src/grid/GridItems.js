@@ -4,7 +4,7 @@ import { getAuth } from 'firebase/auth';
 import { useMouse } from '../hooks/useMouse';
 import GridItem from './GridItem';
 import { moveGridItem } from '../shared/GridManagement';
-import { watchDoc, moveItem } from '../FirebaseHelper';
+import { watchDoc, moveItem, deleteGridItem } from '../FirebaseHelper';
 import { AppContext } from '../AppContext';
 
 const GridItems = ({ boundingRectRef }) => {
@@ -62,10 +62,11 @@ const GridItems = ({ boundingRectRef }) => {
         setGridState(newState);
     };
 
-    const deleteGridItem = (uuid) => {
+    const removeGridItem = (uuid) => {
         const oldState = { ...gridStateRef.current };
         delete oldState[uuid];
         setGridState(oldState);
+        deleteGridItem(uuid);
     };
 
     return (
@@ -81,7 +82,7 @@ const GridItems = ({ boundingRectRef }) => {
                         gridOffset={gridOffset}
                         mousePosition={[position.x, position.y]}
                         placeGridItem={placeGridItem}
-                        deleteGridItem={deleteGridItem}
+                        removeGridItem={removeGridItem}
                         windowMouseDown={windowMouseDown}
                         resetCounter={resetCounter}
                     />

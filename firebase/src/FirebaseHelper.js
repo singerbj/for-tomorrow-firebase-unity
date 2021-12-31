@@ -1,6 +1,6 @@
 import { initializeApp, getApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
-import { getAuth, signInWithEmailAndPassword, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, doc, onSnapshot, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { DEVELOPMENT_MODE } from './Constants';
@@ -48,8 +48,15 @@ export const onAuthStateChanged = (callback) => {
     auth.onAuthStateChanged(callback);
 };
 
-export const loginWithEmail = async (email, password) => {
-    return await signInWithEmailAndPassword(auth, email, password);
+export const loginOrSignupWithEmail = async (email, password) => {
+    try {
+        return await signInWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+        if (e.message.indexOf('auth/user-not-found') > -1) {
+            return await createUserWithEmailAndPassword(auth, email, password);
+        }
+        throw e;
+    }
 };
 
 export const logoutOfFirebase = () => {
@@ -88,6 +95,19 @@ export const moveItem = async (newGridItemLocation, oldGridItemLocation, rotated
         const func = httpsCallable(functions, 'moveItem');
         const uidToken = await getAuth().currentUser.getIdToken(true);
         const { error } = await func({ uidToken, newGridItemLocation, oldGridItemLocation, rotated });
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        throw new Error(e);
+    }
+};
+
+export const deleteGridItem = async (gridItemUuid) => {
+    try {
+        const func = httpsCallable(functions, 'deleteItem');
+        const uidToken = await getAuth().currentUser.getIdToken(true);
+        const { error } = await func({ uidToken, gridItemUuid });
         if (error) {
             throw new Error(error);
         }

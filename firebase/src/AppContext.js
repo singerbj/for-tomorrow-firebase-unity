@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useRef, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router';
-import { onAuthStateChanged, loginWithEmail, logoutOfFirebase, getCurrentUser } from './FirebaseHelper';
+import { onAuthStateChanged, loginOrSignupWithEmail, logoutOfFirebase, getCurrentUser } from './FirebaseHelper';
 
 const alertMessages = [];
 export const AppContext = createContext({ alertMessages: [] });
@@ -50,13 +50,13 @@ const AppContextWrapper = ({ renderContent }) => {
         logoutOfFirebase();
     };
 
-    const login = async (email, password) => {
+    const loginOrSignUp = async (email, password) => {
         setAppState({
             ...appState,
             loading: true,
         });
         try {
-            await loginWithEmail(email, password);
+            await loginOrSignupWithEmail(email, password);
             navigate('/', { replace: true });
             setAppState({
                 ...appState,
@@ -104,7 +104,7 @@ const AppContextWrapper = ({ renderContent }) => {
                     showWarning,
                     showError,
                     getSnackPack,
-                    login,
+                    loginOrSignUp,
                     logout,
                 }}
             >

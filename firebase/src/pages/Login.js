@@ -13,13 +13,13 @@ import { AppContext } from '../AppContext';
 const theme = createTheme();
 
 const Login = () => {
-    const { login, showError } = useContext(AppContext);
+    const { loginOrSignUp, showError } = useContext(AppContext);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         try {
-            await login(data.get('email'), data.get('password'));
+            await loginOrSignUp(data.get('email'), data.get('password'));
         } catch (e) {
             showError('Error logging in. Please try again.');
         }
