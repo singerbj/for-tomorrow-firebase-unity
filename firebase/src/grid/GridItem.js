@@ -6,7 +6,8 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
 import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, R_KEY, BACKSPACE_DELETE_KEY, LEFT_MOUSE_BUTTON } from '../shared/GridConstants';
 import { getGridPosition, hexToRgb } from './GridUtils';
-import { validatePosition } from '../shared/GridManagement';
+
+const { validatePosition } = require('../shared/GridManagement');
 
 const useStyles = makeStyles((theme) => {
     return {

@@ -3,9 +3,11 @@ import PropTypes from 'prop-types';
 import { getAuth } from 'firebase/auth';
 import { useMouse } from '../hooks/useMouse';
 import GridItem from './GridItem';
-import { moveGridItem } from '../shared/GridManagement';
+
 import { watchDoc, moveItem, deleteGridItem } from '../FirebaseHelper';
 import { AppContext } from '../AppContext';
+
+const { moveGridItem } = require('../shared/GridManagement');
 
 const GridItems = ({ boundingRectRef }) => {
     const { showError } = useContext(AppContext);
