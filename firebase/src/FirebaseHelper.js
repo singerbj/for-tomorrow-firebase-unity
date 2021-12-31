@@ -1,8 +1,8 @@
 import { initializeApp, getApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { getAuth, signInWithEmailAndPassword, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getFirestore, doc, onSnapshot, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { DEVELOPMENT_MODE } from './Constants';
 
 const firebaseConfig = {
@@ -31,7 +31,6 @@ if (process.env.NODE_ENV === DEVELOPMENT_MODE) {
     connectFirestoreEmulator(db, 'localhost', 8080);
     connectFunctionsEmulator(functions, 'localhost', 5001);
 }
-
 // track watchers to allow for unsubbing
 const watchMap = {};
 
@@ -50,13 +49,7 @@ export const onAuthStateChanged = (callback) => {
 };
 
 export const loginWithEmail = async (email, password) => {
-    let res;
-    try {
-        res = await signInWithEmailAndPassword(auth, email, password);
-    } catch (e) {
-        console.error(e);
-    }
-    return res;
+    return await signInWithEmailAndPassword(auth, email, password);
 };
 
 export const logoutOfFirebase = () => {
@@ -73,18 +66,32 @@ export const getCurrentUserData = async () => {
     return await db.collection('userData').doc(auth.currentUser.uid).get();
 };
 
-// export const watchDoc = async (collection, docId, onSnapShot, onError) => {
-//     const doc = db.collection(collection).doc(docId);
-//     if (watchMap[`${collection}-${docId}`]) {
-//         console.log(`Unsubbing from doc: ${collection}/${docId}`);
-//         watchMap[`${collection}-${docId}`]();
-//     }
-//     const unsub = doc.onSnapshot((docUpdate) => {
-//         if (docUpdate.data()) {
-//             onSnapShot({ id: docUpdate.id, ...docUpdate.data() });
-//         } else {
-//             onSnapShot();
-//         }
-//     }, onError);
-//     watchMap[`${collection}-${docId}`] = unsub;
-// };
+export const watchDoc = async (collection, docId, onSnapShot, onError) => {
+    const unsub = onSnapshot(
+        doc(db, collection, docId),
+        (docUpdate) => {
+            if (docUpdate.data()) {
+                onSnapShot({ id: docUpdate.id, ...docUpdate.data() });
+            } else {
+                onSnapShot();
+            }
+        },
+        (err) => {
+            onError(err);
+        }
+    );
+    watchMap[`${collection}-${docId}`] = unsub;
+};
+
+export const moveItem = async (newGridItemLocation, oldGridItemLocation, rotated) => {
+    try {
+        const func = httpsCallable(functions, 'moveItem');
+        const uidToken = await getAuth().currentUser.getIdToken(true);
+        const { error } = await func({ uidToken, newGridItemLocation, oldGridItemLocation, rotated });
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        throw new Error(e);
+    }
+};

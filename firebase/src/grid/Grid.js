@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { makeStyles } from '@mui/styles';
-import { ROWS, COLUMNS, GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, CSS_BUG } from './GridConstants';
+import { ROWS, COLUMNS, GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, CSS_BUG } from '../shared/GridConstants';
 import GridItems from './GridItems';
 
 const useStyles = makeStyles({
@@ -30,7 +30,6 @@ const useStyles = makeStyles({
 const Grid = () => {
     const classes = useStyles();
     const boundingRectRef = useRef();
-
     return (
         <>
             <div className={classes.grid} style={{ zIndex: 1 }} ref={boundingRectRef}>
@@ -39,7 +38,7 @@ const Grid = () => {
                         // eslint-disable-next-line react/no-array-index-key
                         <div key={`${i} ${j}`} className={classes.gridRow}>
                             {[...new Array(COLUMNS)].map((k, l) => {
-                                const backgroundColor = ((j % 2) + l) % 2 === 0 ? '#fff' : '#ccc';
+                                const backgroundColor = ((j % 2) + l) % 2 === 0 ? '#fdfdfd' : '#ddd';
                                 // eslint-disable-next-line react/no-array-index-key
                                 return <div key={`${k} ${l}`} className={classes.gridSquare} style={{ backgroundColor }} />;
                             })}

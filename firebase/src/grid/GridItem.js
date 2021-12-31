@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { makeStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
-import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, R_KEY, BACKSPACE_DELETE_KEY, LEFT_MOUSE_BUTTON } from './GridConstants';
+// import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
+import { GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, R_KEY, BACKSPACE_DELETE_KEY, LEFT_MOUSE_BUTTON } from '../shared/GridConstants';
 import { getGridPosition, hexToRgb } from './GridUtils';
-import { validatePosition } from '../shared/grid/GridManagement';
+import { validatePosition } from '../shared/GridManagement';
 
 const useStyles = makeStyles((theme) => {
     return {
@@ -11,15 +14,19 @@ const useStyles = makeStyles((theme) => {
             backgroundColor: 'rgb(85, 85, 187, 1)',
             zIndex: 3,
             position: 'absolute',
-            padding: theme.spacing(0.5),
             userSelect: 'none',
         },
         itemDragging: {
             backgroundColor: 'rgb(85, 85, 187, 0.25)',
             zIndex: 5,
             position: 'absolute',
-            padding: theme.spacing(0.5),
             userSelect: 'none',
+        },
+        gridItemContent: {
+            padding: theme.spacing(0.5),
+        },
+        itemLoading: {
+            paddingTop: theme.spacing(0),
         },
         highlightValid: {
             backgroundColor: 'rgb(85, 187, 85, 0.75)',
@@ -35,6 +42,12 @@ const useStyles = makeStyles((theme) => {
             padding: theme.spacing(0.5),
             userSelect: 'none',
         },
+        loading: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+        },
     };
 });
 
@@ -45,6 +58,7 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
     mouseDownPositionRef.current = mouseDownPositon;
     const dragging = windowMouseDown && mouseDownPositon !== undefined;
     const [localRotation, setLocalRotation] = useState(gridItem.rotated);
+    const [loading, setLoading] = useState(false);
 
     const localRotationRef = useRef(localRotation);
     localRotationRef.current = localRotation;
@@ -61,13 +75,8 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
     let highlightTop;
     let highlightValid;
     if (dragging) {
-        if (gridItem.rotated === localRotationRef.current || gridItem.size[0] === gridItem.size[1]) {
-            left += mousePosition[0] - mouseDownPositon[0];
-            top += mousePosition[1] - mouseDownPositon[1];
-        } else {
-            left = mousePosition[0] + window.scrollX - (size[0] * GRID_SQUARE_WIDTH) / 2;
-            top = mousePosition[1] + window.scrollY - (size[1] * GRID_SQUARE_WIDTH) / 2;
-        }
+        left = mousePosition[0] + window.scrollX - (size[0] * GRID_SQUARE_WIDTH) / 2;
+        top = mousePosition[1] + window.scrollY - (size[1] * GRID_SQUARE_WIDTH) / 2;
 
         const [x, y] = getGridPosition(left - gridOffset[0], top - gridOffset[1]);
         highlightLeft = x * GRID_SQUARE_WIDTH + x * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
@@ -78,6 +87,7 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
 
     useEffect(() => {
         setLocalRotation(gridItem.rotated);
+        setLoading(false);
     }, [resetCounter]);
 
     useEffect(() => {
@@ -103,7 +113,7 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
     }, []);
 
     const onMouseDown = (e) => {
-        if (e.button === LEFT_MOUSE_BUTTON) {
+        if (!loading && e.button === LEFT_MOUSE_BUTTON) {
             setMouseDownPositon(mousePosition);
         }
     };
@@ -111,6 +121,7 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
     const onMouseUp = () => {
         setMouseDownPositon(undefined);
         placeGridItem(getGridPosition(left - gridOffset[0], top - gridOffset[1]), gridItem.location, localRotationRef.current);
+        setLoading(true);
     };
 
     if (gridOffset === null) {
@@ -121,9 +132,10 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
     return (
         <>
             {dragging && <div className={highlightValid ? classes.highlightValid : classes.highlightInvalid} style={{ top: highlightTop, left: highlightLeft, width, height }} />}
-            <div className={dragging ? classes.itemDragging : classes.item} style={{ top, left, width, height, backgroundColor: `rgb(${randomSeededRGBString}, ${dragging ? 0.25 : 1})` }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
-                {`Item ${gridItem.uuid}`}
-            </div>
+            <Box className={`${dragging ? classes.itemDragging : classes.item}`} style={{ top, left, width, height, backgroundColor: `rgb(${randomSeededRGBString}, ${dragging ? 0.25 : 1})` }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+                {loading && <LinearProgress className={classes.loading} />}
+                <Box className={`${classes.gridItemContent} ${loading ? classes.itemLoading : ''}`}>{`Item ${gridItem.uuid}`}</Box>
+            </Box>
         </>
     );
 };

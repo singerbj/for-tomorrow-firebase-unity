@@ -1,4 +1,4 @@
-import { ROWS, COLUMNS } from '../../grid/GridConstants';
+const { ROWS, COLUMNS } = require('./GridConstants');
 
 const _constructGrid = (gridState = []) => {
     const grid = [...new Array(ROWS)].map(() => [...new Array(COLUMNS)].map(() => null));
@@ -63,7 +63,7 @@ const _addGridItem = (gridState, gridItem, preConstructedGrid) => {
     return [error, grid, gridItem];
 };
 
-export const moveGridItem = (gridState, newGridItemLocation, oldGridItemLocation, rotated) => {
+const moveGridItem = (gridState, newGridItemLocation, oldGridItemLocation, rotated) => {
     let grid = _constructGrid(gridState);
     const results = _deleteGridItem(gridState, oldGridItemLocation, grid);
     let error;
@@ -93,7 +93,7 @@ export const moveGridItem = (gridState, newGridItemLocation, oldGridItemLocation
     return [error, gridState];
 };
 
-export const validatePosition = (gridState, gridItem) => {
+const validatePosition = (gridState, gridItem) => {
     let isValid = true;
     const grid = _constructGrid(gridState);
     for (let i = gridItem.location[0]; i < gridItem.location[0] + gridItem.size[gridItem.rotated ? 1 : 0]; i += 1) {
@@ -112,3 +112,5 @@ export const validatePosition = (gridState, gridItem) => {
     }
     return isValid;
 };
+
+module.exports = { moveGridItem, validatePosition };

@@ -8,21 +8,18 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate } from 'react-router';
 import { AppContext } from '../AppContext';
 
 const theme = createTheme();
 
 const Login = () => {
     const { login, showError } = useContext(AppContext);
-    const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         try {
             await login(data.get('email'), data.get('password'));
-            navigate('/');
         } catch (e) {
             showError('Error logging in. Please try again.');
         }

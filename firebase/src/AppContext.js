@@ -56,8 +56,12 @@ const AppContextWrapper = ({ renderContent }) => {
             loading: true,
         });
         try {
-            const { data } = await loginWithEmail(email, password);
-            console.log(data);
+            await loginWithEmail(email, password);
+            navigate('/', { replace: true });
+            setAppState({
+                ...appState,
+                loading: false,
+            });
         } catch (e) {
             setAppState({
                 ...appState,
@@ -71,14 +75,13 @@ const AppContextWrapper = ({ renderContent }) => {
         return onAuthStateChanged(async (user) => {
             if (user) {
                 console.log('User is logged in');
-                navigate('/');
                 setAppState({
                     ...appState,
                     loading: false,
                 });
             } else {
                 console.log('No User logged in');
-                navigate('/login');
+                navigate('/login', { replace: true });
                 setAppState({
                     ...appState,
                     loading: false,

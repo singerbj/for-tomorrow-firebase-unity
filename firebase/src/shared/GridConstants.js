@@ -1,13 +1,13 @@
-export const ROWS = 20;
-export const COLUMNS = 20;
-export const GRID_SQUARE_WIDTH = 50;
-export const SPACE_BETWEEN_SQUARES = 1;
-export const CSS_BUG = 0.1;
-export const R_KEY = ['r', 'R'];
-export const BACKSPACE_DELETE_KEY = ['Backspace', 'Delete'];
-export const LEFT_MOUSE_BUTTON = 0;
+const ROWS = 20;
+const COLUMNS = 20;
+const GRID_SQUARE_WIDTH = 50;
+const SPACE_BETWEEN_SQUARES = 1;
+const CSS_BUG = 0.1;
+const R_KEY = ['r', 'R'];
+const BACKSPACE_DELETE_KEY = ['Backspace', 'Delete'];
+const LEFT_MOUSE_BUTTON = 0;
 
-export const TEST_STATE_ARRAY = [
+const INITIAL_INVENTORY_ARRAY = [
     {
         uuid: 'q0',
         location: [0, 0],
@@ -131,8 +131,10 @@ export const TEST_STATE_ARRAY = [
 ];
 
 const tmp = {};
-TEST_STATE_ARRAY.forEach((o) => {
+INITIAL_INVENTORY_ARRAY.forEach((o) => {
     tmp[o.uuid] = o;
 });
 
-export const TEST_STATE = tmp;
+const INITIAL_INVENTORY = tmp;
+
+module.exports = { ROWS, COLUMNS, GRID_SQUARE_WIDTH, SPACE_BETWEEN_SQUARES, CSS_BUG, R_KEY, BACKSPACE_DELETE_KEY, LEFT_MOUSE_BUTTON, INITIAL_INVENTORY };

@@ -1,15 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { getAuth } from 'firebase/auth';
 import { useMouse } from '../hooks/useMouse';
-import { TEST_STATE } from './GridConstants';
 import GridItem from './GridItem';
-import { moveGridItem } from '../shared/grid/GridManagement';
+import { moveGridItem } from '../shared/GridManagement';
+import { watchDoc, moveItem } from '../FirebaseHelper';
+import { AppContext } from '../AppContext';
 
 const GridItems = ({ boundingRectRef }) => {
-    const [gridState, setGridState] = useState(JSON.parse(localStorage.getItem('gridState')) || TEST_STATE);
+    const { showError } = useContext(AppContext);
+    const [gridState, setGridState] = useState({});
     const gridStateRef = useRef(gridState);
     gridStateRef.current = gridState;
-    // const [movingGridItemLocation, setMovingGridItemLocation] = useState(undefined);
     const [windowMouseDown, setWindowMouseDown] = useState(false);
     const [gridOffset, setGridOffset] = useState(null);
     const [resetCounter, setResetCounter] = useState(0);
@@ -25,7 +27,19 @@ const GridItems = ({ boundingRectRef }) => {
         };
     }, [boundingRectRef]);
 
-    useEffect(() => {}, []);
+    useEffect(() => {
+        watchDoc(
+            'userData',
+            getAuth().currentUser.uid,
+            (snapshot) => {
+                setGridState(snapshot.inventory);
+                setResetCounter((rc) => rc + 1);
+            },
+            (err) => {
+                showError(err);
+            }
+        );
+    }, []);
 
     const onMouseUp = () => {
         setWindowMouseDown(false);
@@ -38,6 +52,12 @@ const GridItems = ({ boundingRectRef }) => {
         const [error, newState] = moveGridItem(gridStateRef.current, newGridItemLocation, oldGridItemLocation, rotated);
         if (error) {
             setResetCounter((rc) => rc + 1);
+        } else {
+            try {
+                moveItem(newGridItemLocation, oldGridItemLocation, rotated);
+            } catch (e) {
+                showError(e);
+            }
         }
         setGridState(newState);
     };
@@ -47,10 +67,6 @@ const GridItems = ({ boundingRectRef }) => {
         delete oldState[uuid];
         setGridState(oldState);
     };
-
-    useEffect(() => {
-        localStorage.setItem('gridState', JSON.stringify(gridState));
-    }, [gridState]);
 
     return (
         <>

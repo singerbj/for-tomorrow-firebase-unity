@@ -52,7 +52,7 @@ const App = ({ currentUser }) => {
                 </Box>
             </Box>
             <Box className={classes.version}>
-                <Typography variant="overline">PRE-ALPHA</Typography>
+                <Typography variant="overline">SUPER-PRE-ALPHA</Typography>
             </Box>
         </>
     );
