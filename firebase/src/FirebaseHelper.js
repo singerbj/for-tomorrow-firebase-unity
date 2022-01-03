@@ -3,6 +3,7 @@ import { getAnalytics } from 'firebase/analytics';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, doc, setDoc, onSnapshot, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { DEVELOPMENT_MODE } from './Constants';
 
 const { INITIAL_INVENTORY } = require('./shared/GridConstants');
@@ -16,12 +17,15 @@ const firebaseConfig = {
     appId: '1:986458756084:web:51ed8dfd1c5acb56fb9fa1',
     measurementId: 'G-0MTFCZBVHV',
 };
-
 // eslint-disable-next-line no-console
 console.log(`You are running in ${process.env.NODE_ENV} mode.`);
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
+export const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider('6Ld6--kdAAAAAG_oSzzIFIyvyu3lwrBYuP-aRmEx'),
+    isTokenAutoRefreshEnabled: true,
+});
 getAnalytics(app);
 
 const auth = getAuth();

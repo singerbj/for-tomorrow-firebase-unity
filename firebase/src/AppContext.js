@@ -1,7 +1,9 @@
 import React, { useState, useEffect, createContext, useRef, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router';
-import { onAuthStateChanged, loginOrSignupWithEmail, logoutOfFirebase, getCurrentUser } from './FirebaseHelper';
+import { onTokenChanged } from 'firebase/app-check';
+import { Typography } from '@mui/material';
+import { appCheck, onAuthStateChanged, loginOrSignupWithEmail, logoutOfFirebase, getCurrentUser } from './FirebaseHelper';
 
 const alertMessages = [];
 export const AppContext = createContext({ alertMessages: [] });
@@ -12,6 +14,7 @@ const AppContextWrapper = ({ renderContent }) => {
     const navigate = useNavigate();
     const [appState, setAppState] = useState({
         loading: true,
+        invalid: false,
     });
     const appStateRef = useRef();
     appStateRef.current = appState;
@@ -72,24 +75,32 @@ const AppContextWrapper = ({ renderContent }) => {
     };
 
     useEffect(() => {
-        return onAuthStateChanged(async (user) => {
-            if (user) {
-                // eslint-disable-next-line no-console
-                console.log('User is logged in');
-                setAppState({
-                    ...appState,
-                    loading: false,
+        onTokenChanged(
+            appCheck,
+            () => {
+                return onAuthStateChanged(async (user) => {
+                    if (user) {
+                        // eslint-disable-next-line no-console
+                        console.log('User is logged in');
+                        setAppState({
+                            ...appState,
+                            loading: false,
+                        });
+                    } else {
+                        // eslint-disable-next-line no-console
+                        console.log('No User logged in');
+                        navigate('/login', { replace: true });
+                        setAppState({
+                            ...appState,
+                            loading: false,
+                        });
+                    }
                 });
-            } else {
-                // eslint-disable-next-line no-console
-                console.log('No User logged in');
-                navigate('/login', { replace: true });
-                setAppState({
-                    ...appState,
-                    loading: false,
-                });
+            },
+            () => {
+                setAppState({ ...appState, invalid: true, loading: false });
             }
-        });
+        );
     }, []);
 
     return (
@@ -110,7 +121,7 @@ const AppContextWrapper = ({ renderContent }) => {
                     logout,
                 }}
             >
-                {renderContent(getCurrentUser())}
+                {appState.invalid ? <Typography>You have an invalid instance of this application.</Typography> : renderContent(getCurrentUser())}
             </AppContext.Provider>
         </>
     );
