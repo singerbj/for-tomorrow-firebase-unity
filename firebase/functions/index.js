@@ -13,7 +13,10 @@ const db = admin.firestore();
 
 // Grid actions
 // move item
-exports.moveItem = functions.https.onCall(async (data) => {
+exports.moveItem = functions.https.onCall(async (data, context) => {
+    if (context.app === undefined) {
+        throw new functions.https.HttpsError('failed-precondition', 'The function must be called from an App Check verified app.');
+    }
     try {
         const { uid } = await admin.auth().verifyIdToken(data.uidToken);
         const userDataRef = db.collection('userData').doc(uid);
@@ -34,7 +37,10 @@ exports.moveItem = functions.https.onCall(async (data) => {
 });
 
 // delete item
-exports.deleteItem = functions.https.onCall(async (data) => {
+exports.deleteItem = functions.https.onCall(async (data, context) => {
+    if (context.app === undefined) {
+        throw new functions.https.HttpsError('failed-precondition', 'The function must be called from an App Check verified app.');
+    }
     try {
         const { uid } = await admin.auth().verifyIdToken(data.uidToken);
         const userDataRef = db.collection('userData').doc(uid);
