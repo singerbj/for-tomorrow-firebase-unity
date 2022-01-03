@@ -128,6 +128,34 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
         }
     };
 
+    const onTouchStart = () => {
+        // document.body.style.overflow = 'hidden';
+        if (!loading) {
+            setMouseDownPositon(mousePosition);
+        }
+    };
+
+    const onTouchEnd = () => {
+        // document.body.style.overflow = 'auto';
+        setMouseDownPositon(undefined);
+        const newLocation = getGridPosition(left - gridOffset[0], top - gridOffset[1]);
+        placeGridItem(newLocation, gridItem.location, localRotationRef.current);
+        if (newLocation[0] !== gridItem.location[0] || newLocation[1] !== gridItem.location[1] || localRotationRef.current !== gridItem.rotated) {
+            setLoading(true);
+        }
+    };
+
+    // const onTouchMove = (e) => console.log('onTouchMove', e);
+    const onTouchCancel = () => {
+        // document.body.style.overflow = 'auto';
+        setMouseDownPositon(undefined);
+        // const newLocation = getGridPosition(left - gridOffset[0], top - gridOffset[1]);
+        // placeGridItem(newLocation, gridItem.location, localRotationRef.current);
+        // if (newLocation[0] !== gridItem.location[0] || newLocation[1] !== gridItem.location[1] || localRotationRef.current !== gridItem.rotated) {
+        //     setLoading(true);
+        // }
+    };
+
     if (gridOffset === null) {
         return null;
     }
@@ -136,7 +164,16 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
     return (
         <>
             {dragging && <div className={highlightValid ? classes.highlightValid : classes.highlightInvalid} style={{ top: highlightTop, left: highlightLeft, width, height }} />}
-            <Box className={`${dragging ? classes.itemDragging : classes.item}`} style={{ top, left, width, height, backgroundColor: `rgb(${randomSeededRGBString}, ${dragging ? 0.25 : 1})` }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+            <Box
+                className={`${dragging ? classes.itemDragging : classes.item}`}
+                style={{ top, left, width, height, backgroundColor: `rgb(${randomSeededRGBString}, ${dragging ? 0.25 : 1})` }}
+                onMouseDown={onMouseDown}
+                onMouseUp={onMouseUp}
+                onTouchStart={onTouchStart}
+                // onTouchMove={onTouchMove}
+                onTouchCancel={onTouchCancel}
+                onTouchEnd={onTouchEnd}
+            >
                 {loading && <LinearProgress className={classes.loading} />}
                 <Box className={`${classes.gridItemContent} ${loading ? classes.itemLoading : ''}`}>{`Item ${gridItem.uuid}`}</Box>
             </Box>

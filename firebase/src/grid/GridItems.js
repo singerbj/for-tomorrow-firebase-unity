@@ -17,6 +17,8 @@ const GridItems = ({ boundingRectRef }) => {
     const [windowMouseDown, setWindowMouseDown] = useState(false);
     const [gridOffset, setGridOffset] = useState(null);
     const [resetCounter, setResetCounter] = useState(0);
+    // const [touching, setTouching] = useState(false);
+    // console.log(touching);
 
     useEffect(() => {
         const cb = () => {
@@ -43,12 +45,31 @@ const GridItems = ({ boundingRectRef }) => {
         );
     }, []);
 
-    const onMouseUp = () => {
-        setWindowMouseDown(false);
-    };
+    const onMouseUp = () => setWindowMouseDown(false);
     const onMouseDown = () => setWindowMouseDown(true);
 
-    const [position] = useMouse(onMouseDown, onMouseUp);
+    const onTouchStart = () => {
+        console.log('onTouchStart');
+
+        // setTouching(true);
+        setWindowMouseDown(true);
+    };
+    const onTouchEnd = () => {
+        console.log('onTouchEnd');
+
+        // setTouching(false);
+        setWindowMouseDown(false);
+    };
+    const onTouchCancel = () => {
+        console.log('onTouchCancel');
+
+        // setTouching(false);
+        setWindowMouseDown(false);
+    };
+
+    console.log(windowMouseDown);
+
+    const [position] = useMouse(onMouseDown, onMouseUp, onTouchStart, onTouchCancel, onTouchEnd);
 
     const placeGridItem = (newGridItemLocation, oldGridItemLocation, rotated) => {
         const [error, newState] = moveGridItem(gridStateRef.current, newGridItemLocation, oldGridItemLocation, rotated);
