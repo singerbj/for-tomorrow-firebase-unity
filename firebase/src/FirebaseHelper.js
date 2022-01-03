@@ -1,7 +1,7 @@
 import { initializeApp, getApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, doc, setDoc, onSnapshot, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, doc, collection, getDocs, setDoc, onSnapshot, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { DEVELOPMENT_MODE } from './Constants';
@@ -50,6 +50,14 @@ const watchMap = {};
 //     return returnArr;
 // };
 
+const snapshotToObject = (snapshot) => {
+    const returnObj = {};
+    snapshot.forEach((childSnapshot) => {
+        returnObj[childSnapshot.id] = childSnapshot.data();
+    });
+    return returnObj;
+};
+
 export const onAuthStateChanged = (callback) => {
     auth.onAuthStateChanged(callback);
 };
@@ -82,9 +90,9 @@ export const getCurrentUserData = async () => {
     return await db.collection('userData').doc(auth.currentUser.uid).get();
 };
 
-export const watchDoc = async (collection, docId, onSnapShot, onError) => {
+export const watchDoc = async (collectionForDoc, docId, onSnapShot, onError) => {
     const unsub = onSnapshot(
-        doc(db, collection, docId),
+        doc(db, collectionForDoc, docId),
         (docUpdate) => {
             if (docUpdate.data()) {
                 onSnapShot({ id: docUpdate.id, ...docUpdate.data() });
@@ -96,7 +104,12 @@ export const watchDoc = async (collection, docId, onSnapShot, onError) => {
             onError(err);
         }
     );
-    watchMap[`${collection}-${docId}`] = unsub;
+    watchMap[`${collectionForDoc}-${docId}`] = unsub;
+};
+
+export const getCatalog = async () => {
+    const snapshot = await getDocs(collection(db, 'catalog'));
+    return snapshotToObject(snapshot);
 };
 
 export const moveItem = async (newGridItemLocation, oldGridItemLocation, rotated) => {

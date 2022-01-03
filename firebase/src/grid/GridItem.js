@@ -12,19 +12,34 @@ const { validatePosition } = require('../shared/GridManagement');
 const useStyles = makeStyles((theme) => {
     return {
         item: {
-            backgroundColor: 'rgb(85, 85, 187, 1)',
             zIndex: 3,
             position: 'absolute',
             userSelect: 'none',
         },
         itemDragging: {
-            backgroundColor: 'rgb(85, 85, 187, 0.25)',
             zIndex: 5,
             position: 'absolute',
             userSelect: 'none',
         },
+        image: {
+            zIndex: 6,
+            background: 'transparent',
+            objectFit: 'contain',
+        },
+        imageRotated: {
+            zIndex: 6,
+            position: 'absolute',
+            background: 'transparent',
+            objectFit: 'contain',
+            transformOrigin: 'top left',
+            transform: 'rotate(90deg)',
+        },
         gridItemContent: {
+            zIndex: 7,
             padding: theme.spacing(0.5),
+            position: 'absolute',
+            top: 0,
+            left: 0,
         },
         itemLoading: {
             paddingTop: theme.spacing(0),
@@ -44,6 +59,7 @@ const useStyles = makeStyles((theme) => {
             userSelect: 'none',
         },
         loading: {
+            zIndex: 8,
             position: 'absolute',
             bottom: 0,
             left: 0,
@@ -52,7 +68,7 @@ const useStyles = makeStyles((theme) => {
     };
 });
 
-const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridItem, removeGridItem, windowMouseDown, resetCounter }) => {
+const GridItem = ({ catalog, gridState, gridItem, gridOffset, mousePosition, placeGridItem, removeGridItem, windowMouseDown, resetCounter }) => {
     const classes = useStyles();
     const [mouseDownPositon, setMouseDownPositon] = useState(undefined);
     const mouseDownPositionRef = useRef(mouseDownPositon);
@@ -64,7 +80,7 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
     const localRotationRef = useRef(localRotation);
     localRotationRef.current = localRotation;
 
-    const size = localRotation ? [...gridItem.size].reverse() : gridItem.size;
+    const size = localRotation ? [...catalog[gridItem.itemId].size].reverse() : catalog[gridItem.itemId].size;
 
     let left = gridItem.location[0] * GRID_SQUARE_WIDTH + gridItem.location[0] * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[0] : 0);
     let top = gridItem.location[1] * GRID_SQUARE_WIDTH + gridItem.location[1] * SPACE_BETWEEN_SQUARES + SPACE_BETWEEN_SQUARES + (gridOffset ? gridOffset[1] : 0);
@@ -133,18 +149,27 @@ const GridItem = ({ gridState, gridItem, gridOffset, mousePosition, placeGridIte
     }
 
     const randomSeededRGBString = hexToRgb(Math.floor(Math.abs(Math.sin(parseInt(`12345${size[0]}${size[1]}`)) * 16777215)).toString(16)); // TODO: remove this
+
     return (
         <>
             {dragging && <div className={highlightValid ? classes.highlightValid : classes.highlightInvalid} style={{ top: highlightTop, left: highlightLeft, width, height }} />}
-            <Box className={`${dragging ? classes.itemDragging : classes.item}`} style={{ top, left, width, height, backgroundColor: `rgb(${randomSeededRGBString}, ${dragging ? 0.25 : 1})` }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+            <Box className={`${dragging ? classes.itemDragging : classes.item}`} style={{ top, left, width, height, background: `rgb(${randomSeededRGBString}, ${dragging ? 0.25 : 1})` }} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
                 {loading && <LinearProgress className={classes.loading} />}
-                <Box className={`${classes.gridItemContent} ${loading ? classes.itemLoading : ''}`}>{`Item ${gridItem.uuid}`}</Box>
+                <img
+                    className={localRotation ? classes.imageRotated : classes.image}
+                    src={catalog[gridItem.itemId].imgUrl}
+                    style={localRotation ? { left: width, width: height, height: width } : { top, left, width, height }}
+                    alt={gridItem.name}
+                    draggable="false"
+                />
+                <Box className={`${classes.gridItemContent} ${loading ? classes.itemLoading : ''}`}>{`${catalog[gridItem.itemId].name}`}</Box>
             </Box>
         </>
     );
 };
 
 GridItem.propTypes = {
+    catalog: PropTypes.object.isRequired,
     gridState: PropTypes.object.isRequired,
     gridItem: PropTypes.object.isRequired,
     gridOffset: PropTypes.array,

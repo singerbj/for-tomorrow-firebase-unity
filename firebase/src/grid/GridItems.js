@@ -4,13 +4,14 @@ import { getAuth } from 'firebase/auth';
 import { useMouse } from '../hooks/useMouse';
 import GridItem from './GridItem';
 
-import { watchDoc, moveItem, deleteGridItem } from '../FirebaseHelper';
+import { watchDoc, getCatalog, moveItem, deleteGridItem } from '../FirebaseHelper';
 import { AppContext } from '../AppContext';
 
 const { moveGridItem } = require('../shared/GridManagement');
 
 const GridItems = ({ boundingRectRef }) => {
     const { showError } = useContext(AppContext);
+    const [catalog, setCatalog] = useState({});
     const [gridState, setGridState] = useState({});
     const gridStateRef = useRef(gridState);
     gridStateRef.current = gridState;
@@ -30,17 +31,25 @@ const GridItems = ({ boundingRectRef }) => {
     }, [boundingRectRef]);
 
     useEffect(() => {
-        watchDoc(
-            'userData',
-            getAuth().currentUser.uid,
-            (snapshot) => {
-                setGridState(snapshot.inventory);
-                setResetCounter((rc) => rc + 1);
-            },
-            (err) => {
-                showError(err);
+        (async () => {
+            try {
+                setCatalog(await getCatalog());
+
+                watchDoc(
+                    'userData',
+                    getAuth().currentUser.uid,
+                    (snapshot) => {
+                        setGridState(snapshot.inventory);
+                        setResetCounter((rc) => rc + 1);
+                    },
+                    (err) => {
+                        showError(err);
+                    }
+                );
+            } catch (err) {
+                console.log(err);
             }
-        );
+        })();
     }, []);
 
     const onMouseUp = () => {
@@ -79,6 +88,7 @@ const GridItems = ({ boundingRectRef }) => {
                     <GridItem
                         boundingRectRef={boundingRectRef}
                         key={gridItem.uuid}
+                        catalog={catalog}
                         gridState={gridState}
                         gridItem={gridItem}
                         gridOffset={gridOffset}
